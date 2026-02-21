@@ -176,6 +176,10 @@
 #define GEM_PCSANNPTX		0x021c /* PCS AN Next Page TX */
 #define GEM_PCSANNPLP		0x0220 /* PCS AN Next Page LP */
 #define GEM_PCSANEXTSTS		0x023c /* PCS AN Extended Status */
+#define GEM_RXLPI		0x0270 /* EEE RX LPI Transitions */
+#define GEM_RXLPITIME		0x0274 /* EEE RX LPI Time */
+#define GEM_TXLPI		0x0278 /* EEE TX LPI Transitions */
+#define GEM_TXLPITIME		0x027c /* EEE TX LPI Time */
 #define GEM_DCFG1		0x0280 /* Design Config 1 */
 #define GEM_DCFG2		0x0284 /* Design Config 2 */
 #define GEM_DCFG3		0x0288 /* Design Config 3 */
@@ -257,6 +261,10 @@
 #define MACB_OSSMODE_SIZE	1
 #define MACB_MIIONRGMII_OFFSET	28 /* MII Usage on RGMII Interface */
 #define MACB_MIIONRGMII_SIZE	1
+
+/* GEM specific NCR bitfields. */
+#define GEM_TXLPIEN_OFFSET	19 /* TX LPI Enable */
+#define GEM_TXLPIEN_SIZE	1
 
 /* Bitfields in NCFGR */
 #define MACB_SPD_OFFSET		0 /* Speed */
@@ -756,6 +764,7 @@
 #define MACB_CAPS_MIIONRGMII			0x00000200
 #define MACB_CAPS_NEED_TSUCLK			0x00000400
 #define MACB_CAPS_QUEUE_DISABLE			0x00000800
+#define MACB_CAPS_EEE				0x00001000
 #define MACB_CAPS_PCS				0x01000000
 #define MACB_CAPS_HIGH_SPEED			0x02000000
 #define MACB_CAPS_CLK_HW_CHG			0x04000000
@@ -1038,6 +1047,10 @@ struct gem_stats {
 	u32	rx_ip_header_checksum_errors;
 	u32	rx_tcp_checksum_errors;
 	u32	rx_udp_checksum_errors;
+	u32	rx_lpi_transitions;
+	u32	rx_lpi_time;
+	u32	tx_lpi_transitions;
+	u32	tx_lpi_time;
 };
 
 /* Describes the name and offset of an individual statistic register, as
@@ -1137,6 +1150,10 @@ static const struct gem_statistic gem_statistics[] = {
 			    GEM_BIT(NDS_RXERR)),
 	GEM_STAT_TITLE_BITS(RXUDPCCNT, "rx_udp_checksum_errors",
 			    GEM_BIT(NDS_RXERR)),
+	GEM_STAT_TITLE(RXLPI, "rx_lpi_transitions"),
+	GEM_STAT_TITLE(RXLPITIME, "rx_lpi_time"),
+	GEM_STAT_TITLE(TXLPI, "tx_lpi_transitions"),
+	GEM_STAT_TITLE(TXLPITIME, "tx_lpi_time"),
 };
 
 #define GEM_STATS_LEN ARRAY_SIZE(gem_statistics)
@@ -1340,6 +1357,12 @@ struct macb {
 	u32			rx_watermark;
 
 	struct macb_ptp_info	*ptp_info;	/* macb-ptp interface */
+
+	/* EEE / LPI state */
+	bool			eee_active;
+	bool			tx_lpi_enabled;
+	struct delayed_work	tx_lpi_work;
+	unsigned int		tx_lpi_timer_ms; /* idle timeout before LPI */
 
 	struct phy		*sgmii_phy;	/* for ZynqMP SGMII mode */
 
