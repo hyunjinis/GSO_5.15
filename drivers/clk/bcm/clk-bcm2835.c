@@ -1637,6 +1637,22 @@ static const char *const bcm2835_clock_per_parents[] = {
 	.parents = bcm2835_clock_per_parents,				\
 	__VA_ARGS__)
 
+static const char *const bcm2835_clock_per_no_osc_parents[] = {
+	"gnd",
+	"testdebug0",
+	"testdebug1",
+	"plla_per",
+	"pllc_per",
+	"plld_per",
+	"pllh_aux",
+};
+
+#define REGISTER_PER_NO_OSC_CLK(s, ...)	REGISTER_CLK(			\
+	s,								\
+	.num_mux_parents = ARRAY_SIZE(bcm2835_clock_per_no_osc_parents),	\
+	.parents = bcm2835_clock_per_no_osc_parents,				\
+	__VA_ARGS__)
+
 /*
  * Restrict clock sources for the PCM peripheral to the oscillator and
  * PLLD_PER because other source may have varying rates or be switched
@@ -2126,7 +2142,7 @@ static const struct bcm2835_clk_desc clk_desc_array[] = {
 		.div_reg = CM_DFTDIV,
 		.int_bits = 5,
 		.frac_bits = 0),
-	[BCM2835_CLOCK_DPI]	= REGISTER_PER_CLK(
+	[BCM2835_CLOCK_DPI]	= REGISTER_PER_NO_OSC_CLK(
 		SOC_ALL,
 		.name = "dpi",
 		.ctl_reg = CM_DPICTL,
