@@ -33,5 +33,5 @@ struct __kernel_sockaddr_storage {
 //modified(add)*****
 #define MSG_FINISH_SEND 0x80000000U
 #define SO_CUSTOM_FLAG 12345
-//*****
+//******
 #endif /* _UAPI_LINUX_SOCKET_H */
