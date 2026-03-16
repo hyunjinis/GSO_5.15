@@ -30,6 +30,8 @@ struct __kernel_sockaddr_storage {
 #define SOCK_RCVBUF_LOCK	2
 
 #define SOCK_BUF_LOCK_MASK (SOCK_SNDBUF_LOCK | SOCK_RCVBUF_LOCK)
+//modified(add)*****
 #define MSG_FINISH_SEND 0x80000000U
 #define SO_CUSTOM_FLAG 12345
+//*****
 #endif /* _UAPI_LINUX_SOCKET_H */
