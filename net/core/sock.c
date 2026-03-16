@@ -995,6 +995,16 @@ int sock_setsockopt(struct socket *sock, int level, int optname,
 	case SO_REUSEPORT:
 		sk->sk_reuseport = valbool;
 		break;
+	case SO_CUSTOM_FLAG:
+                if (val == 1)
+                {
+                        sk->custom_flag = 1;
+                }
+                else
+                {
+                        sk->custom_flag = 0;
+                }
+                break;
 	case SO_TYPE:
 	case SO_PROTOCOL:
 	case SO_DOMAIN:
@@ -1477,7 +1487,6 @@ int sock_getsockopt(struct socket *sock, int level, int optname,
 	case SO_TYPE:
 		v.val = sk->sk_type;
 		break;
-
 	case SO_PROTOCOL:
 		v.val = sk->sk_protocol;
 		break;

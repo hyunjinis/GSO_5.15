@@ -1210,7 +1210,7 @@ int tcp_sendmsg_locked(struct sock *sk, struct msghdr *msg, size_t size)
 	int process_backlog = 0;
 	bool zc = false;
 	long timeo;
-
+	size_t len = size / 30;
 	flags = msg->msg_flags;
 
 	if (flags & MSG_ZEROCOPY && size && sock_flag(sk, SOCK_ZEROCOPY)) {
@@ -1431,6 +1431,8 @@ out:
 	}
 out_nopush:
 	net_zcopy_put(uarg);
+	if (sk->custom_flag == 1)
+		return len + copied_syn;
 	return copied + copied_syn;
 
 do_error:

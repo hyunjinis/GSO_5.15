@@ -105,6 +105,8 @@
 #include <net/busy_poll.h>
 #include <linux/errqueue.h>
 #include <linux/ptp_clock_kernel.h>
+#include <linux/spinlock.h>
+static DEFINE_SPINLOCK(custom_send_lock);
 
 #ifdef CONFIG_NET_RX_BUSY_POLL
 unsigned int sysctl_net_busy_read __read_mostly;
@@ -2014,14 +2016,43 @@ int __sys_sendto(int fd, void __user *buff, size_t len, unsigned int flags,
 	struct msghdr msg;
 	struct iovec iov;
 	int fput_needed;
+        struct iovec iovecs[30];  // 30개의 iovec 버퍼
+        struct iov_iter iter;
+        static int iov_index = 0;
+        static size_t total_len = 0;
 
+        sock = sockfd_lookup_light(fd, &err, &fput_needed);
+        if (!sock)
+        {
+            printk(KERN_INFO "!sock in sys_sendto");
+            goto out;
+        }
+        struct sock *sk = sock->sk;
+        unsigned long irq_flags;
+	if (sk->custom_flag == 1)
+        {
+            spin_lock_irqsave(&custom_send_lock, irq_flags);
+            iovecs[iov_index].iov_base = buff;
+            iovecs[iov_index].iov_len = len;
+            total_len += len;
+            iov_index++;  // 세미콜론 추가
+
+            if ((iov_index == 30) || (flags & MSG_FINISH_SEND))
+            {
+                iov_iter_init(&iter, READ, iovecs, iov_index, total_len);
+                total_len = 0;
+                iov_index = 0;  // iov_index 초기화
+                msg.msg_iter = iter;
+		spin_unlock_irqrestore(&custom_send_lock, irq_flags);
+                goto sock;  // 전송 처리로 이동
+            }
+	    spin_unlock_irqrestore(&custom_send_lock, irq_flags);
+            return len;
+        }
 	err = import_single_range(WRITE, buff, len, &iov, &msg.msg_iter);
 	if (unlikely(err))
 		return err;
-	sock = sockfd_lookup_light(fd, &err, &fput_needed);
-	if (!sock)
-		goto out;
-
+sock:
 	msg.msg_name = NULL;
 	msg.msg_control = NULL;
 	msg.msg_controllen = 0;
