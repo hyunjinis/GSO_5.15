@@ -2010,6 +2010,7 @@ SYSCALL_DEFINE3(getpeername, int, fd, struct sockaddr __user *, usockaddr,
 int __sys_sendto(int fd, void __user *buff, size_t len, unsigned int flags,
 		 struct sockaddr __user *addr,  int addr_len)
 {
+//modified *****
 	struct socket *sock;
 	struct sockaddr_storage address;
 	int err;
@@ -2053,6 +2054,7 @@ int __sys_sendto(int fd, void __user *buff, size_t len, unsigned int flags,
 	if (unlikely(err))
 		return err;
 sock:
+//*****
 	msg.msg_name = NULL;
 	msg.msg_control = NULL;
 	msg.msg_controllen = 0;
