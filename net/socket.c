@@ -2054,7 +2054,7 @@ int __sys_sendto(int fd, void __user *buff, size_t len, unsigned int flags,
 	if (unlikely(err))
 		return err;
 sock:
-//*****
+//******
 	msg.msg_name = NULL;
 	msg.msg_control = NULL;
 	msg.msg_controllen = 0;
