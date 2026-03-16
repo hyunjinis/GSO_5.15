@@ -105,9 +105,10 @@
 #include <net/busy_poll.h>
 #include <linux/errqueue.h>
 #include <linux/ptp_clock_kernel.h>
+//modified*****
 #include <linux/spinlock.h>
 static DEFINE_SPINLOCK(custom_send_lock);
-
+//*****
 #ifdef CONFIG_NET_RX_BUSY_POLL
 unsigned int sysctl_net_busy_read __read_mostly;
 unsigned int sysctl_net_busy_poll __read_mostly;
